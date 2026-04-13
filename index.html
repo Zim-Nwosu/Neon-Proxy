@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Neon Proxy Hub</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #05060a;
+    color: #00ffe1;
+    overflow: hidden;
+}
+
+/* Top Bar */
+.topbar {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: rgba(10, 12, 18, 0.95);
+    border-bottom: 1px solid #00ffe1;
+    box-shadow: 0 0 20px #00ffe1;
+}
+
+.btn {
+    background: transparent;
+    border: 1px solid #00ffe1;
+    color: #00ffe1;
+    padding: 6px 10px;
+    margin-right: 5px;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.btn:hover {
+    background: #00ffe1;
+    color: #000;
+}
+
+.urlbar {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #00ffe1;
+    background: #0b0f16;
+    color: #00ffe1;
+    outline: none;
+    border-radius: 6px;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    background: #0a0d14;
+    border-bottom: 1px solid #00ffe1;
+    overflow-x: auto;
+}
+
+.tab {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-right: 1px solid #00ffe1;
+}
+
+.tab.active {
+    background: #00ffe1;
+    color: black;
+    font-weight: bold;
+}
+
+/* Browser frame */
+iframe {
+    width: 100%;
+    height: calc(100vh - 90px);
+    border: none;
+    background: black;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+    <button class="btn" onclick="back()">⬅</button>
+    <button class="btn" onclick="forward()">➡</button>
+    <button class="btn" onclick="newTab()">➕ Tab</button>
+
+    <input id="urlInput" class="urlbar" placeholder="Enter URL (https://example.com)" />
+    <button class="btn" onclick="go()">Go</button>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<iframe id="frame"></iframe>
+
+<script>
+let tabs = [];
+let activeTab = 0;
+
+function createTab(url = "https://example.com") {
+    return { history: [url], index: 0 };
+}
+
+function init() {
+    tabs.push(createTab());
+    renderTabs();
+    load();
+}
+
+function renderTabs() {
+    const tabsDiv = document.getElementById("tabs");
+    tabsDiv.innerHTML = "";
+
+    tabs.forEach((t, i) => {
+        const div = document.createElement("div");
+        div.className = "tab" + (i === activeTab ? " active" : "");
+        div.innerText = "Tab " + (i + 1);
+        div.onclick = () => switchTab(i);
+        tabsDiv.appendChild(div);
+    });
+}
+
+function switchTab(i) {
+    activeTab = i;
+    renderTabs();
+    load();
+}
+
+function newTab() {
+    tabs.push(createTab());
+    activeTab = tabs.length - 1;
+    renderTabs();
+    load();
+}
+
+function go() {
+    let url = document.getElementById("urlInput").value;
+    if (!url.startsWith("http")) url = "https://" + url;
+
+    const tab = tabs[activeTab];
+    tab.history = tab.history.slice(0, tab.index + 1);
+    tab.history.push(url);
+    tab.index++;
+
+    load();
+}
+
+function load() {
+    const tab = tabs[activeTab];
+    const url = tab.history[tab.index];
+    document.getElementById("frame").src = url;
+    document.getElementById("urlInput").value = url;
+}
+
+function back() {
+    const tab = tabs[activeTab];
+    if (tab.index > 0) {
+        tab.index--;
+        load();
+    }
+}
+
+function forward() {
+    const tab = tabs[activeTab];
+    if (tab.index < tab.history.length - 1) {
+        tab.index++;
+        load();
+    }
+}
+
+init();
+</script>
+
+</body>
+</html>
